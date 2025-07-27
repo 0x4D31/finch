@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Finch | Client Fingerprint</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root {
+      --bg-light: #f4f6f9;
+      --bg-dark: #1e1e1f;
+      --card-light: #ffffff;
+      --card-dark: #232325;
+      --text-light: #16171a;
+      --text-dark: #e5e7eb;
+      --accent: #6366f1;
+      --label-bg: #4338ca;
+      --label-fg: #edeaff;
+      --label-radius: 1.1em;
+      --radius: 0.9rem;
+      --muted: #757686;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg-light: #1e1e1f;
+        --card-light: #232325;
+        --text-light: #e5e7eb;
+        --muted: #acadc5;
+      }
+    }
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+      margin: 0;
+      background: var(--bg-light);
+      color: var(--text-light);
+      display: flex;
+      justify-content: center;
+      padding: 2rem 1rem;
+      min-height: 100vh;
+    }
+    .container {
+      width: 100%;
+      max-width: 46rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .title {
+      font-size: 1.18rem;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 0.5rem;
+      letter-spacing: 0.01em;
+      line-height: 1.2;
+      color: var(--text-light);
+    }
+    .user-agent {
+      font-size: 0.95rem;
+      text-align: center;
+      color: var(--muted);
+      margin-bottom: 2.1rem;
+      word-break: break-all;
+      line-height: 1.25;
+      font-weight: 400;
+      max-width: 100%;
+    }
+    .grid {
+      display: grid;
+      gap: 1.1rem;
+      grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr));
+      width: 100%;
+    }
+    .fp-card {
+      background: var(--card-light);
+      border: 1px solid rgba(0,0,0,0.08);
+      border-radius: var(--radius);
+      padding: 1.1rem 1rem 2.1rem;
+      position: relative;
+      box-shadow: 0 2px 10px 0 rgba(0,0,0,0.03);
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .label {
+      display: inline-block;
+      font-weight: 600;
+      font-size: 0.92rem;
+      margin-bottom: 0.66rem;
+      letter-spacing: 0.02em;
+      color: #edeaff;
+      background: #4338ca;
+      border-radius: 1.1em;
+      padding: 0.14em 0.95em 0.14em 0.95em;
+      user-select: none;
+    }
+    .value {
+      font-family: ui-monospace, Menlo, Consolas, "Liberation Mono", monospace;
+      font-size: 0.92rem;
+      line-height: 1.4;
+      overflow-wrap: anywhere;
+      word-break: break-all;
+      user-select: all;
+      margin-bottom: 0.7rem;
+      color: var(--text-light);
+    }
+    .copy-btn {
+      position: absolute;
+      right: 1rem;
+      bottom: 1rem;
+      background: none;
+      color: #b4b4c5;
+      border: none;
+      border-radius: 0.5rem;
+      padding: 0.35rem 0.78rem;
+      font-size: 0.81rem;
+      font-weight: 500;
+      cursor: pointer;
+      opacity: 1;
+      transition: background 0.18s, color 0.18s, opacity 0.18s;
+      outline: none;
+      box-shadow: none;
+    }
+    .copy-btn:hover,
+    .copy-btn:focus {
+      color: #6366f1;
+      background: #f2f2fa;
+    }
+    .download-row {
+      display: flex;
+      justify-content: center;
+      width: 100%;
+      margin-top: 1.7rem;
+    }
+    .download {
+      color: #6366f1;
+      font-size: 0.93rem;
+      font-weight: 500;
+      text-decoration: underline;
+      background: none;
+      border: none;
+      border-radius: 0;
+      padding: 0.2rem 0.2rem;
+      cursor: pointer;
+      transition: color 0.16s;
+      outline: none;
+    }
+    .download:hover,
+    .download:focus {
+      color: #4755d6;
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <div class="title">Your HTTP &amp; TLS Fingerprints</div>
+    <br>
+    <div class="user-agent">{{.UserAgent}}</div>
+    <section class="grid">
+      <div class="fp-card">
+        <span class="label">JA3</span>
+        <div class="value" id="ja3">{{.JA3}}</div>
+        <button class="copy-btn" aria-label="Copy JA3">Copy</button>
+      </div>
+      <div class="fp-card">
+        <span class="label">JA4</span>
+        <div class="value" id="ja4">{{.JA4}}</div>
+        <button class="copy-btn" aria-label="Copy JA4">Copy</button>
+      </div>
+      <div class="fp-card">
+        <span class="label">JA4H</span>
+        <div class="value" id="ja4h">{{.JA4H}}</div>
+        <button class="copy-btn" aria-label="Copy JA4H">Copy</button>
+      </div>
+      <div class="fp-card">
+        <span class="label">HTTP/2</span>
+        <div class="value" id="http2">{{.HTTP2}}</div>
+        <button class="copy-btn" aria-label="Copy HTTP/2">Copy</button>
+      </div>
+    </section>
+    <div class="download-row">
+      <a class="download" href="/fp/clienthello" download aria-label="Download ClientHello hex">
+        Download ClientHello (hex)
+      </a>
+    </div>
+  </main>
+  <script>
+    document.querySelectorAll('.copy-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const value = btn.parentElement.querySelector('.value').innerText;
+        navigator.clipboard.writeText(value).then(() => {
+          btn.textContent = 'Copied!';
+          setTimeout(() => btn.textContent = 'Copy', 1300);
+        });
+      });
+    });
+  </script>
+</body>
+</html>
