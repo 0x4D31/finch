@@ -1187,7 +1187,7 @@ func TestServer_SuricataBodyLimitTruncate(t *testing.T) {
 	hcl := `rule "suri" {
   action = "deny"
   when all {
-    suricata_msg = ["*Evil Body*"]
+    suricata_msg = ["Evil Body"]
   }
 }`
 	tmp, err := os.CreateTemp(t.TempDir(), "rule-*.hcl")
@@ -1327,11 +1327,19 @@ func (failingBody) Close() error             { return nil }
 
 func TestRuleHandler_BodyReadError(t *testing.T) {
 	u, _ := url.Parse("http://example.com")
+	logPath := t.TempDir() + "/events.jsonl"
+	lgr, err := logger.New(logPath)
+	if err != nil {
+		t.Fatalf("new logger: %v", err)
+	}
+	defer func() { _ = lgr.Close() }()
+
 	h := &ruleHandler{
 		listenerAddr: "test",
 		local:        &rules.Engine{DefaultAction: rules.ActionAllow},
 		defaultURL:   u,
 		bodyLimit:    1024,
+		logger:       lgr,
 	}
 	req := httptest.NewRequest(http.MethodPost, "http://example.com", failingBody{})
 	req.RemoteAddr = "127.0.0.1:1234"
@@ -1406,7 +1414,7 @@ func TestServer_SuricataMatchLogging(t *testing.T) {
 	hcl := `rule "suri" {
   action = "deny"
   when all {
-    suricata_msg = ["*Test Suricata*"]
+    suricata_msg = ["Test Suricata"]
   }
 }`
 	tmp, err := os.CreateTemp(t.TempDir(), "rule-*.hcl")
