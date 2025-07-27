@@ -41,7 +41,7 @@ func TestServer_SuricataMatch(t *testing.T) {
 	hcl := `rule "suri" {
   action = "deny"
   when all {
-    suricata_msg = ["*Test Suricata*"]
+    suricata_msg = ["Test Suricata"]
   }
 }`
 	tmp, err := os.CreateTemp(t.TempDir(), "rule-*.hcl")
@@ -136,7 +136,7 @@ func TestServer_SuricataMatch_NoLogger(t *testing.T) {
 	hcl := `rule "suri" {
   action = "deny"
   when all {
-    suricata_msg = ["*Test Suricata*"]
+    suricata_msg = ["Test Suricata"]
   }
 }`
 	tmp, err := os.CreateTemp(t.TempDir(), "rule-*.hcl")

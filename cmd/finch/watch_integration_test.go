@@ -27,19 +27,35 @@ func TestWatchConfig_ListenerRuleFileUpdate(t *testing.T) {
 	dir := t.TempDir()
 	r1 := filepath.Join(dir, "r1.hcl")
 	r2 := filepath.Join(dir, "r2.hcl")
-	os.WriteFile(r1, []byte(`rule "r1" { action = "deny" when { http_path = ["/first"] } }`), 0o644)
-	os.WriteFile(r2, []byte(`rule "r2" { action = "deny" when { http_path = ["/second"] } }`), 0o644)
+	os.WriteFile(r1, []byte(`rule "r1" {
+  action = "deny"
+  when {
+    http_path = ["/first"]
+  }
+}`), 0o644)
+	os.WriteFile(r2, []byte(`rule "r2" {
+  action = "deny"
+  when {
+    http_path = ["/second"]
+  }
+}`), 0o644)
+
+	lnTmp, _ := net.Listen("tcp", "127.0.0.1:0")
+	port := lnTmp.Addr().(*net.TCPAddr).Port
+	_ = lnTmp.Close()
+
+	addr := fmt.Sprintf("127.0.0.1:%d", port)
 
 	cfgPath := filepath.Join(dir, "finch.hcl")
-	cfgTpl := "listener \"a\" {\n  bind = \"127.0.0.1:12345\"\n  upstream = \"%s\"\n  rule_file = \"%s\"\n}\n"
-	os.WriteFile(cfgPath, []byte(fmt.Sprintf(cfgTpl, backend.URL, r1)), 0o644)
+	cfgTpl := "listener \"a\" {\n  bind = \"%s\"\n  upstream = \"%s\"\n  rule_file = \"%s\"\n}\n"
+	os.WriteFile(cfgPath, []byte(fmt.Sprintf(cfgTpl, addr, backend.URL, r1)), 0o644)
 
 	loader := NewLoader("allow")
 	eng, err := loader.LoadEngine(r1)
 	if err != nil {
 		t.Fatalf("load engine: %v", err)
 	}
-	srv, err := proxy.New("a", "127.0.0.1:0", backend.URL, "", "", nil, eng, nil, nil, nil, nil, "", false)
+	srv, err := proxy.New("a", addr, backend.URL, "", "", nil, eng, nil, nil, nil, nil, "", false)
 	if err != nil {
 		t.Fatalf("new server: %v", err)
 	}
@@ -69,7 +85,7 @@ func TestWatchConfig_ListenerRuleFileUpdate(t *testing.T) {
 	}
 	resp.Body.Close()
 
-	if err := os.WriteFile(cfgPath, []byte(fmt.Sprintf(cfgTpl, backend.URL, r2)), 0o644); err != nil {
+	if err := os.WriteFile(cfgPath, []byte(fmt.Sprintf(cfgTpl, addr, backend.URL, r2)), 0o644); err != nil {
 		t.Fatalf("write cfg: %v", err)
 	}
 
@@ -115,16 +131,27 @@ func TestWatchConfig_SuricataDirUpdate(t *testing.T) {
 	os.WriteFile(filepath.Join(s2, "test.rules"), []byte(`alert http any any -> $HOME_NET any (msg:"Two"; http.uri; content:"/evil2"; sid:2;)`), 0o644)
 
 	rulePath := filepath.Join(dir, "rules.hcl")
-	os.WriteFile(rulePath, []byte(`rule "s" { action = "deny" when all { suricata_msg = ["*"] } }`), 0o644)
+	os.WriteFile(rulePath, []byte(`rule "s" {
+  action = "deny"
+  when all {
+    suricata_msg = ["~ .+"]
+  }
+}`), 0o644)
+
+	lnTmp, _ := net.Listen("tcp", "127.0.0.1:0")
+	port := lnTmp.Addr().(*net.TCPAddr).Port
+	_ = lnTmp.Close()
+
+	addr := fmt.Sprintf("127.0.0.1:%d", port)
 
 	cfgPath := filepath.Join(dir, "finch.hcl")
-	cfgTpl := "suricata { enabled = true rules_dir = \"%s\" }\nlistener \"a\" { bind=\"127.0.0.1:12345\" upstream=\"%s\" rule_file=\"%s\" }\n"
-	os.WriteFile(cfgPath, []byte(fmt.Sprintf(cfgTpl, s1, backend.URL, rulePath)), 0o644)
+	cfgTpl := "suricata {\n  enabled = true\n  rules_dir = \"%s\"\n}\nlistener \"a\" {\n  bind = \"%s\"\n  upstream = \"%s\"\n  rule_file = \"%s\"\n}\n"
+	os.WriteFile(cfgPath, []byte(fmt.Sprintf(cfgTpl, s1, addr, backend.URL, rulePath)), 0o644)
 
 	loader := NewLoader("allow")
 	eng, _ := loader.LoadEngine(rulePath)
 	set, _ := loader.LoadSuricata(s1)
-	srv, err := proxy.New("a", "127.0.0.1:0", backend.URL, "", "", nil, eng, nil, set, nil, nil, "", false)
+	srv, err := proxy.New("a", addr, backend.URL, "", "", nil, eng, nil, set, nil, nil, "", false)
 	if err != nil {
 		t.Fatalf("new server: %v", err)
 	}
@@ -154,7 +181,7 @@ func TestWatchConfig_SuricataDirUpdate(t *testing.T) {
 	}
 	resp.Body.Close()
 
-	if err := os.WriteFile(cfgPath, []byte(fmt.Sprintf(cfgTpl, s2, backend.URL, rulePath)), 0o644); err != nil {
+	if err := os.WriteFile(cfgPath, []byte(fmt.Sprintf(cfgTpl, s2, addr, backend.URL, rulePath)), 0o644); err != nil {
 		t.Fatalf("write cfg: %v", err)
 	}
 
@@ -196,16 +223,32 @@ func TestWatchConfig_DefaultRuleFileUpdate(t *testing.T) {
 	dir := t.TempDir()
 	r1 := filepath.Join(dir, "r1.hcl")
 	r2 := filepath.Join(dir, "r2.hcl")
-	os.WriteFile(r1, []byte(`rule "r1" { action = "deny" when { http_path = ["/first"] } }`), 0o644)
-	os.WriteFile(r2, []byte(`rule "r2" { action = "deny" when { http_path = ["/second"] } }`), 0o644)
+	os.WriteFile(r1, []byte(`rule "r1" {
+  action = "deny"
+  when {
+    http_path = ["/first"]
+  }
+}`), 0o644)
+	os.WriteFile(r2, []byte(`rule "r2" {
+  action = "deny"
+  when {
+    http_path = ["/second"]
+  }
+}`), 0o644)
+
+	lnTmp, _ := net.Listen("tcp", "127.0.0.1:0")
+	port := lnTmp.Addr().(*net.TCPAddr).Port
+	_ = lnTmp.Close()
+
+	addr := fmt.Sprintf("127.0.0.1:%d", port)
 
 	cfgPath := filepath.Join(dir, "finch.hcl")
-	cfgTpl := "defaults { rule_file = \"%s\" }\nlistener \"a\" { bind = \"127.0.0.1:12345\" upstream = \"%s\" }\n"
-	os.WriteFile(cfgPath, []byte(fmt.Sprintf(cfgTpl, r1, backend.URL)), 0o644)
+	cfgTpl := "defaults { rule_file = \"%s\" }\nlistener \"a\" {\n  bind = \"%s\"\n  upstream = \"%s\"\n}\n"
+	os.WriteFile(cfgPath, []byte(fmt.Sprintf(cfgTpl, r1, addr, backend.URL)), 0o644)
 
 	loader := NewLoader("allow")
 	eng, _ := loader.LoadEngine(r1)
-	srv, err := proxy.New("a", "127.0.0.1:0", backend.URL, "", "", nil, nil, eng, nil, nil, nil, "", false)
+	srv, err := proxy.New("a", addr, backend.URL, "", "", nil, nil, eng, nil, nil, nil, "", false)
 	if err != nil {
 		t.Fatalf("new server: %v", err)
 	}
@@ -235,7 +278,7 @@ func TestWatchConfig_DefaultRuleFileUpdate(t *testing.T) {
 	}
 	resp.Body.Close()
 
-	if err := os.WriteFile(cfgPath, []byte(fmt.Sprintf(cfgTpl, r2, backend.URL)), 0o644); err != nil {
+	if err := os.WriteFile(cfgPath, []byte(fmt.Sprintf(cfgTpl, r2, addr, backend.URL)), 0o644); err != nil {
 		t.Fatalf("write cfg: %v", err)
 	}
 
