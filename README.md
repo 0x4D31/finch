@@ -231,4 +231,4 @@ Contributions, bug reports and feature requests are welcome! Please open an issu
 
 ## License
 
-Finch is developed by Adel "0x4D31" Ka and licensed under the [Apache License 2.0](LICENSE). It uses the [fingerproxy](https://github.com/wi1dcard/fingerproxy) package, also under the Apache‑2.0.
+Finch is developed by Adel “0x4D31” Ka and licensed under the [Apache License 2.0](LICENSE). It relies on the [fingerproxy](https://github.com/wi1dcard/fingerproxy) package, also licensed under Apache‑2.0. The integrated JA4H fingerprinting method is licensed under the [FoxIO License 1.1](https://github.com/FoxIO-LLC/ja4/blob/main/LICENSE) and includes certain usage restrictions.
