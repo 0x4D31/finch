@@ -229,6 +229,12 @@ Static analysis is performed via [golangci‑lint](https://golangci-lint.run/) �
 
 Contributions, bug reports and feature requests are welcome! Please open an issue or pull request. Ensure tests pass and `golangci‑lint` reports no warnings before submitting patches.
 
+## Disclaimer
+
+Finch is a personal, after-hours project by Adel “0x4D31” Ka. While its open-source release has been approved by my employer, it is **not** developed, maintained, or endorsed by them.
+
+This tool is intended to help defenders detect, filter, or deceive unwanted traffic. Any other use—offensive, unlawful, or otherwise—is beyond the intended scope. I accept no responsibility or liability for such misuse.
+
 ## License
 
 Finch is developed by Adel “0x4D31” Ka and licensed under the [Apache License 2.0](LICENSE). It relies on the [fingerproxy](https://github.com/wi1dcard/fingerproxy) package, also licensed under Apache‑2.0. The integrated JA4H fingerprinting method is licensed under the [FoxIO License 1.1](https://github.com/FoxIO-LLC/ja4/blob/main/LICENSE) and includes certain usage restrictions.
