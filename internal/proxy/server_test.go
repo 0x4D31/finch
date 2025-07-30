@@ -31,6 +31,8 @@ import (
 	suricata "github.com/0x4d31/galah/pkg/suricata"
 	"github.com/tmc/langchaingo/llms"
 
+	"github.com/0x4D31/fingerproxy/pkg/metadata"
+
 	"github.com/0x4D31/finch/internal/fingerprint"
 	"github.com/0x4D31/finch/internal/logger"
 	"github.com/0x4D31/finch/internal/rules"
@@ -1151,7 +1153,9 @@ func TestRuleHandler_LocalDefaultOnFingerprintError(t *testing.T) {
 		global:       &rules.Engine{DefaultAction: rules.ActionAllow},
 		defaultURL:   u,
 	}
-	req := httptest.NewRequest(http.MethodGet, "http://example.com", nil)
+	baseCtx, md := metadata.NewContext(context.Background())
+	md.ClientHelloRecord = []byte{0x01}
+	req := httptest.NewRequest(http.MethodGet, "http://example.com", nil).WithContext(baseCtx)
 	req.RemoteAddr = "127.0.0.1:1234"
 	w := httptest.NewRecorder()
 	h.ServeHTTP(w, req)
