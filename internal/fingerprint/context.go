@@ -24,7 +24,9 @@ type RequestCtx struct {
 	PathPrefix   string
 }
 
-// New extracts fingerprint information from the request context.
+// New extracts fingerprint information from the request context. When the context
+// lacks metadata from fingerproxy, fingerprint fields remain empty and no error
+// is returned so rule evaluation can still proceed using other request data.
 func New(r *http.Request) (RequestCtx, error) {
 	md, ok := metadata.FromContext(r.Context())
 
