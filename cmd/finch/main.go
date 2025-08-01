@@ -52,7 +52,7 @@ func main() {
 				Flags: []cli.Flag{
 					&cli.StringFlag{Name: "config", Aliases: []string{"c"}, Sources: cli.EnvVars("FINCH_CONFIG")},
 					&cli.StringSliceFlag{Name: "listen", Aliases: []string{"l"}, Sources: cli.EnvVars("FINCH_LISTEN"), DefaultText: "0.0.0.0:8443"},
-					&cli.StringFlag{Name: "rule-file", Aliases: []string{"rules"}, Sources: cli.EnvVars("FINCH_RULE_FILE")},
+					&cli.StringFlag{Name: "rules", Aliases: []string{"r"}, Sources: cli.EnvVars("FINCH_RULE_FILE")},
 					&cli.StringFlag{Name: "upstream", Aliases: []string{"u"}, Value: "http://localhost:8080", Sources: cli.EnvVars("FINCH_UPSTREAM")},
 					&cli.StringFlag{Name: "access-log", Aliases: []string{"o"}, Value: "events.jsonl", Sources: cli.EnvVars("FINCH_ACCESS_LOG")},
 					&cli.StringFlag{Name: "cert", Aliases: []string{"C"}, Sources: cli.EnvVars("FINCH_CERT")},
@@ -124,8 +124,8 @@ func serveAction(ctx context.Context, cmd *cli.Command) error {
 		}
 		cblog.Infof("loaded config from %s", cfgPath)
 		ov := loader.Overrides{}
-		if cmd.IsSet("rule-file") {
-			ov.RuleFile = cmd.String("rule-file")
+		if cmd.IsSet("rules") {
+			ov.RuleFile = cmd.String("rules")
 			ov.RuleFileSet = true
 		}
 		if cmd.IsSet("access-log") {
@@ -168,8 +168,8 @@ func serveAction(ctx context.Context, cmd *cli.Command) error {
 			return err
 		}
 	} else {
-		if cmd.String("rule-file") == "" {
-			return errors.New("--rule-file required when --listen is used")
+		if cmd.String("rules") == "" {
+			return errors.New("--rules required when --listen is used")
 		}
 		cfg, err = loader.SynthesiseFromFlags(cmd)
 		if err != nil {

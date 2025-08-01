@@ -17,12 +17,12 @@ import (
 )
 
 // TestServeQuickModeMissingRuleFile ensures SynthesiseFromFlags errors when
-// --listen is provided without --rule-file.
+// --listen is provided without --rules.
 func TestServeQuickModeMissingRuleFile(t *testing.T) {
 	cmd := &cli.Command{
 		Flags: []cli.Flag{
 			&cli.StringSliceFlag{Name: "listen"},
-			&cli.StringFlag{Name: "rule-file"},
+			&cli.StringFlag{Name: "rules"},
 		},
 		Action: func(ctx context.Context, c *cli.Command) error {
 			_, err := loader.SynthesiseFromFlags(c)
@@ -30,8 +30,8 @@ func TestServeQuickModeMissingRuleFile(t *testing.T) {
 		},
 	}
 	err := cmd.Run(context.Background(), []string{"serve", "--listen", "127.0.0.1:1"})
-	if err == nil || !strings.Contains(err.Error(), "--rule-file") {
-		t.Fatalf("expected rule-file error, got %v", err)
+	if err == nil || !strings.Contains(err.Error(), "--rules") {
+		t.Fatalf("expected rules error, got %v", err)
 	}
 }
 
@@ -52,7 +52,7 @@ func TestServeQuickModeMultiListen(t *testing.T) {
 	cmd := &cli.Command{
 		Flags: []cli.Flag{
 			&cli.StringSliceFlag{Name: "listen"},
-			&cli.StringFlag{Name: "rule-file"},
+			&cli.StringFlag{Name: "rules"},
 			&cli.StringFlag{Name: "access-log"},
 		},
 		Action: func(ctx context.Context, c *cli.Command) error {
@@ -61,7 +61,7 @@ func TestServeQuickModeMultiListen(t *testing.T) {
 			return err
 		},
 	}
-	args := []string{"serve", "--listen", "127.0.0.1:1", "--listen", "127.0.0.1:2", "--rule-file", rule, "--access-log", logPath}
+	args := []string{"serve", "--listen", "127.0.0.1:1", "--listen", "127.0.0.1:2", "--rules", rule, "--access-log", logPath}
 	if err := cmd.Run(context.Background(), args); err != nil {
 		t.Fatalf("run: %v", err)
 	}

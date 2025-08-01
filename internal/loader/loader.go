@@ -184,9 +184,9 @@ func SynthesiseFromFlags(cmd *cli.Command) (config.Config, error) {
 	if len(listens) == 0 {
 		listens = []string{DefaultListenBind}
 	}
-	ruleFile := cmd.String("rule-file")
+	ruleFile := cmd.String("rules")
 	if ruleFile == "" {
-		return config.Config{}, fmt.Errorf("--rule-file required")
+		return config.Config{}, fmt.Errorf("--rules required")
 	}
 	rf, err := AbsFromCWD(ruleFile)
 	if err != nil {

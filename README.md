@@ -59,7 +59,7 @@ The container listens on port 8443. Configure listeners and upstreams via envir
 Run Finch without a configuration file using quick‑mode flags:
 
 ```bash
-finch serve --listen :8443 --rule-file my.rules.hcl \
+finch serve --listen :8443 --rules my.rules.hcl \
             --upstream http://localhost:8080
 ```
 
@@ -75,7 +75,7 @@ Useful flags include:
 | ------------------------------- | -------------------------------------------------------------- |
 | `--listen`                      | Bind address for quick mode (repeatable).                      |
 | `--upstream`                    | Default upstream URL for proxying requests.                    |
-| `--rule-file`                   | Path to the HCL rule file when using quick mode.               |
+| `--rules`                       | Path to the HCL rule file when using quick mode.               |
 | `--access-log`                  | Path to the JSONL access log.                                  |
 | `--log-level`                   | Set log level (`debug`, `info`, `warn`, `error`).              |
 | `finch validate --config FILE`  | Validate a main config file.                                   |

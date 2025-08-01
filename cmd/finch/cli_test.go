@@ -24,7 +24,7 @@ func runServe(args []string) (config.Config, error) {
 		Flags: []cli.Flag{
 			&cli.StringFlag{Name: "config", Aliases: []string{"c"}, Sources: cli.EnvVars("FINCH_CONFIG")},
 			&cli.StringSliceFlag{Name: "listen", Aliases: []string{"l"}, Sources: cli.EnvVars("FINCH_LISTEN")},
-			&cli.StringFlag{Name: "rule-file", Aliases: []string{"rules"}, Sources: cli.EnvVars("FINCH_RULE_FILE")},
+			&cli.StringFlag{Name: "rules", Aliases: []string{"r"}, Sources: cli.EnvVars("FINCH_RULE_FILE")},
 			&cli.StringFlag{Name: "upstream", Aliases: []string{"u"}, Value: loader.DefaultUpstream, Sources: cli.EnvVars("FINCH_UPSTREAM")},
 			&cli.StringFlag{Name: "access-log", Aliases: []string{"o"}, Value: loader.DefaultAccessLog, Sources: cli.EnvVars("FINCH_ACCESS_LOG")},
 			&cli.StringFlag{Name: "cert", Aliases: []string{"C"}, Sources: cli.EnvVars("FINCH_CERT")},
@@ -54,8 +54,8 @@ func runServe(args []string) (config.Config, error) {
 					return err
 				}
 				ov := loader.Overrides{}
-				if c.IsSet("rule-file") {
-					ov.RuleFile = c.String("rule-file")
+				if c.IsSet("rules") {
+					ov.RuleFile = c.String("rules")
 					ov.RuleFileSet = true
 				}
 				if c.IsSet("access-log") {
@@ -148,7 +148,7 @@ listener "a" {
 }
 
 func TestServeMutualExclusion(t *testing.T) {
-	_, err := runServe([]string{"--config", "a.hcl", "--listen", ":1", "--rule-file", "r.hcl"})
+	_, err := runServe([]string{"--config", "a.hcl", "--listen", ":1", "--rules", "r.hcl"})
 	if err == nil || !strings.Contains(err.Error(), "mutually exclusive") {
 		t.Fatalf("expected mutual exclusion error, got %v", err)
 	}
@@ -162,7 +162,7 @@ func TestServeQuickMode(t *testing.T) {
 	}
 
 	logPath := filepath.Join(dir, "log.jsonl")
-	cfg, err := runServe([]string{"--listen", "127.0.0.1:1", "--rule-file", rule, "--upstream", "http://example", "--access-log", logPath, "--enable-admin=false", "--enable-sse=false"})
+	cfg, err := runServe([]string{"--listen", "127.0.0.1:1", "--rules", rule, "--upstream", "http://example", "--access-log", logPath, "--enable-admin=false", "--enable-sse=false"})
 	if err != nil {
 		t.Fatalf("runServe quick: %v", err)
 	}

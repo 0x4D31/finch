@@ -73,7 +73,7 @@ func TestSynthesiseFromFlags(t *testing.T) {
 	cmd := &cli.Command{
 		Flags: []cli.Flag{
 			&cli.StringSliceFlag{Name: "listen"},
-			&cli.StringFlag{Name: "rule-file"},
+			&cli.StringFlag{Name: "rules"},
 			&cli.StringFlag{Name: "upstream"},
 			&cli.StringFlag{Name: "access-log"},
 			&cli.StringFlag{Name: "cert"},
@@ -92,7 +92,7 @@ func TestSynthesiseFromFlags(t *testing.T) {
 			return err
 		},
 	}
-	args := []string{"serve", "--listen", "127.0.0.1:1", "--listen", "127.0.0.1:2", "--rule-file", rule,
+	args := []string{"serve", "--listen", "127.0.0.1:1", "--listen", "127.0.0.1:2", "--rules", rule,
 		"--upstream", "https://up.example", "--access-log", access, "--cert", cert, "--key", key,
 		"--upstream-ca-file", ca, "--upstream-skip-tls-verify", "--admin-addr", ":9000",
 		"--admin-token", "tok", "--sse-addr", ":9001"}
@@ -117,7 +117,7 @@ func TestSynthesiseFromFlags_MissingRuleFile(t *testing.T) {
 	cmd := &cli.Command{
 		Flags: []cli.Flag{
 			&cli.StringSliceFlag{Name: "listen"},
-			&cli.StringFlag{Name: "rule-file"},
+			&cli.StringFlag{Name: "rules"},
 		},
 		Action: func(ctx context.Context, c *cli.Command) error {
 			_, err := SynthesiseFromFlags(c)
