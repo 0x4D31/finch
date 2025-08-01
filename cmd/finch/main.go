@@ -72,6 +72,7 @@ func main() {
 				Usage: "run echo server",
 				Flags: []cli.Flag{
 					&cli.StringSliceFlag{Name: "listen", Aliases: []string{"l"}, Sources: cli.EnvVars("FINCH_LISTEN"), DefaultText: "0.0.0.0:8443"},
+					&cli.StringFlag{Name: "access-log", Aliases: []string{"o"}, Sources: cli.EnvVars("FINCH_ACCESS_LOG")},
 				},
 				Action: echoAction,
 			},
@@ -258,12 +259,16 @@ func echoAction(ctx context.Context, cmd *cli.Command) error {
 	}
 
 	cfg := config.Config{
-		Defaults:  &config.Defaults{ProxyCacheSize: loader.DefaultProxyCacheSize},
-		Listeners: []config.ListenerConfig{{ID: "listener1", Bind: listens[0]}},
+		Defaults:  &config.Defaults{},
+		Listeners: []config.ListenerConfig{{ID: "echo", Bind: listens[0]}},
+	}
+
+	// Only set access log if explicitly provided
+	if cmd.IsSet("access-log") {
+		cfg.Defaults.AccessLog = cmd.String("access-log")
 	}
 
 	pf := parsedFlags{
-		LogLevel: strings.ToLower(cmd.String("log-level")),
 		EchoMode: true,
 	}
 

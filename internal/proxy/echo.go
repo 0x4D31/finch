@@ -8,12 +8,14 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 
 	cblog "github.com/charmbracelet/log"
 	"github.com/dreadl0ck/tlsx"
 	"github.com/refraction-networking/utls/dicttls"
 
 	"github.com/0x4D31/finch/internal/fingerprint"
+	"github.com/0x4D31/finch/internal/logger"
 
 	fpja3 "github.com/0x4D31/fingerproxy/pkg/ja3"
 	fpja4 "github.com/0x4D31/fingerproxy/pkg/ja4"
@@ -211,11 +213,61 @@ func echoHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// echoHandlerWithLogging wraps echoHandler to add logging functionality
+func echoHandlerWithLogging(w http.ResponseWriter, r *http.Request, lgr *logger.Logger, listenerAddr string) {
+	// Log the request before handling it
+	now := time.Now()
+	ctx, err := fingerprint.New(r)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Create a logging event similar to the proxy server
+	ev := logger.Event{
+		EventTime:       now,
+		SrcIP:           r.RemoteAddr,
+		Method:          r.Method,
+		Request:         r.URL.String(),
+		Headers:         make(map[string]string),
+		ProtocolVersion: r.Proto,
+		UserAgent:       r.UserAgent(),
+		JA3:             ctx.JA3,
+		JA3Raw:          ctx.JA3Raw,
+		JA4:             ctx.JA4,
+		JA4H:            ctx.JA4H,
+		HTTP2:           ctx.HTTP2,
+		Action:          "echo",
+		ListenerAddr:    listenerAddr,
+	}
+
+	// Copy headers
+	for k, v := range r.Header {
+		if len(v) > 0 {
+			ev.Headers[k] = v[0]
+		}
+	}
+
+	// Log the event
+	_ = lgr.Log(ev)
+
+	// Call the original handler
+	echoHandler(w, r)
+}
+
 // NewEcho creates a Server that returns fingerprint information for every
 // request instead of proxying to an upstream.
-func NewEcho(id, listenAddr, certFile, keyFile string) (*Server, error) {
-	// reuse New with nil engines and local upstream since we're not proxying
-	return newServerWithHandler(id, listenAddr, certFile, keyFile, http.HandlerFunc(echoHandler))
+func NewEcho(id, listenAddr, certFile, keyFile string, lgr *logger.Logger) (*Server, error) {
+	// Create a handler that logs events if a logger is provided
+	var handler http.Handler
+	if lgr != nil {
+		handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			echoHandlerWithLogging(w, r, lgr, listenAddr)
+		})
+	} else {
+		handler = http.HandlerFunc(echoHandler)
+	}
+	return newServerWithHandler(id, listenAddr, certFile, keyFile, handler)
 }
 
 // newServerWithHandler is a helper that mirrors New but allows a custom handler.

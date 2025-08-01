@@ -128,12 +128,37 @@ func newRuntime(cfg *config.Config, pf parsedFlags, hub *sse.Hub, sseSrv **sse.S
 
 func (rt *runtimeState) addListener(l config.ListenerConfig, cfg *config.Config, globalEng *rules.Engine, suriSet *atomic.Pointer[suricata.RuleSet], hub *sse.Hub) (*proxy.Server, error) {
 	if rt.pf.EchoMode {
+		// Set up access logging for echo mode
+		if l.AccessLog == "" && cfg.Defaults != nil && cfg.Defaults.AccessLog != "" {
+			l.AccessLog = cfg.Defaults.AccessLog
+		}
+
+		var lgr *logger.Logger
+		if l.AccessLog != "" {
+			if lr, ok := rt.loggers[l.AccessLog]; ok {
+				lgr = lr.l
+				lr.ref++
+			} else {
+				var err error
+				lgr, err = logger.New(l.AccessLog)
+				if err != nil {
+					return nil, fmt.Errorf("logger %s: %w", l.ID, err)
+				}
+				rt.loggers[l.AccessLog] = &logRef{l: lgr, ref: 1}
+			}
+		}
+
 		certFile, keyFile := "", ""
 		if l.TLS != nil {
 			certFile = l.TLS.Cert
 			keyFile = l.TLS.Key
 		}
-		return proxy.NewEcho(l.ID, l.Bind, certFile, keyFile)
+		svr, err := proxy.NewEcho(l.ID, l.Bind, certFile, keyFile, lgr)
+		if err != nil {
+			return nil, err
+		}
+		rt.logPaths[l.ID] = l.AccessLog
+		return svr, nil
 	}
 
 	if l.AccessLog == "" && cfg.Defaults != nil {

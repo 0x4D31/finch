@@ -78,14 +78,14 @@ Useful flags include:
 | `--rules`                       | Path to the HCL rule file when using quick mode.               |
 | `--access-log`                  | Path to the JSONL access log.                                  |
 | `--log-level`                   | Set log level (`debug`, `info`, `warn`, `error`).              |
-| `finch validate --config FILE`  | Validate a main config file.                                   |
-| `finch validate --rules FILE`   | Validate a rule file only.                                     |
-| `finch echo --listen ADDR`      | Run an echo server                                             |
 | `--upstream-ca-file`            | PEM file containing CAs trusted for upstream HTTPS.            |
 | `--upstream-skip-tls-verify`    | Skip verification of upstream certificates (use with caution). |
 | `--admin-addr`/`--enable-admin` | Enable and configure the admin API (default: 127.0.0.1:9035).  |
 | `--sse-addr`/`--enable-sse`     | Enable and configure the SSE feed (default: 127.0.0.1:9036).   |
 | `--admin-token`                 | Bearer token required for the admin API.                       |
+| `finch validate --config FILE`  | Validate a main config file.                                   |
+| `finch validate --rules FILE`   | Validate a rule file only.                                     |
+| `finch echo --listen ADDR`      | Run an echo server (with optional `--access-log`)              |
 
 Finch automatically reloads its configuration and rule files when they change or when it receives a `SIGHUP`.
 
