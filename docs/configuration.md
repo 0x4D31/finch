@@ -23,7 +23,7 @@ The optional `defaults` block defines values inherited by all listeners:
 | `admin.addr`   | Address to listen on for admin endpoints (default: `127.0.0.1:9035`).             |
 | `admin.token`  | Bearer token required for admin API requests; can be set via `FINCH_ADMIN_TOKEN`. |
 | `sse.enabled`  | Enable the SSE feed (default: `true`).                                            |
-| `sse.addr`     | Address for the SSE feed (default: `:9036`).                                      |
+| `sse.addr`     | Address for the SSE feed (default: `127.0.0.1:9036`).                             |
 
 ## Listener Fields
 

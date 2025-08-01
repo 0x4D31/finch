@@ -221,6 +221,18 @@ func SynthesiseFromFlags(cmd *cli.Command) (config.Config, error) {
 	}
 	skip := cmd.Bool("upstream-skip-tls-verify")
 
+	adminEnabled := cmd.Bool("enable-admin")
+	adminAddr := cmd.String("admin-addr")
+	if adminEnabled && adminAddr == "" {
+		adminAddr = config.DefaultAdminAddr
+	}
+
+	sseEnabled := cmd.Bool("enable-sse")
+	sseAddr := cmd.String("sse-addr")
+	if sseEnabled && sseAddr == "" {
+		sseAddr = config.DefaultSSEAddr
+	}
+
 	cfg := config.Config{
 		Defaults: &config.Defaults{
 			RuleFile:              rf,
@@ -230,13 +242,13 @@ func SynthesiseFromFlags(cmd *cli.Command) (config.Config, error) {
 			ProxyCacheSize:        DefaultProxyCacheSize,
 		},
 		Admin: &config.AdminConfig{
-			Enabled: cmd.Bool("enable-admin"),
-			Addr:    cmd.String("admin-addr"),
+			Enabled: adminEnabled,
+			Addr:    adminAddr,
 			Token:   cmd.String("admin-token"),
 		},
 		SSE: &config.SSEConfig{
-			Enabled: cmd.Bool("enable-sse"),
-			Addr:    cmd.String("sse-addr"),
+			Enabled: sseEnabled,
+			Addr:    sseAddr,
 		},
 	}
 	cfg.Listeners = make([]config.ListenerConfig, len(listens))

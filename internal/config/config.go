@@ -18,7 +18,7 @@ import (
 
 const (
 	DefaultAdminAddr = "127.0.0.1:9035"
-	DefaultSSEAddr   = ":9036"
+	DefaultSSEAddr   = "127.0.0.1:9036"
 )
 
 // Config represents the top-level configuration file.

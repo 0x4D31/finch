@@ -83,8 +83,8 @@ Useful flags include:
 | `finch echo --listen ADDR`      | Run an echo server                                             |
 | `--upstream-ca-file`            | PEM file containing CAs trusted for upstream HTTPS.            |
 | `--upstream-skip-tls-verify`    | Skip verification of upstream certificates (use with caution). |
-| `--admin-addr`/`--enable-admin` | Enable and configure the admin API.                            |
-| `--sse-addr`/`--enable-sse`     | Enable and configure the SSE feed.                             |
+| `--admin-addr`/`--enable-admin` | Enable and configure the admin API (default: 127.0.0.1:9035).  |
+| `--sse-addr`/`--enable-sse`     | Enable and configure the SSE feed (default: 127.0.0.1:9036).   |
 | `--admin-token`                 | Bearer token required for the admin API.                       |
 
 Finch automatically reloads its configuration and rule files when they change or when it receives a `SIGHUP`.
@@ -194,7 +194,7 @@ If the `suricata` block is enabled and a `rules_dir` is specified, Finch watches
 
 ## Server‑Sent Events
 
-When enabled (via `--enable-sse`/`sse.enabled`) Finch exposes a live SSE feed at `/events` on the address specified by `--sse-addr` (default `:9036`). Each event is a JSON object identical to the access log entries. See [sse-client](docs/sse-client.html) for a simple client example.
+When enabled (via `--enable-sse`/`sse.enabled`) Finch exposes a live SSE feed at `/events` on the address specified by `--sse-addr` (default `127.0.0.1:9036`). Each event is a JSON object identical to the access log entries. See [sse-client](docs/sse-client.html) for a simple client example.
 
 ## Admin API
 

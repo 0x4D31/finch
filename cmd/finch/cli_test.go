@@ -32,10 +32,10 @@ func runServe(args []string) (config.Config, error) {
 			&cli.StringFlag{Name: "upstream-ca-file", Sources: cli.EnvVars("FINCH_UPSTREAM_CA_FILE")},
 			&cli.BoolFlag{Name: "upstream-skip-tls-verify", Sources: cli.EnvVars("FINCH_UPSTREAM_SKIP_TLS_VERIFY")},
 			&cli.BoolFlag{Name: "enable-admin", Value: true, Sources: cli.EnvVars("FINCH_ENABLE_ADMIN")},
-			&cli.StringFlag{Name: "admin-addr", Sources: cli.EnvVars("FINCH_ADMIN_ADDR")},
+			&cli.StringFlag{Name: "admin-addr", DefaultText: "127.0.0.1:9035", Sources: cli.EnvVars("FINCH_ADMIN_ADDR")},
 			&cli.StringFlag{Name: "admin-token", Sources: cli.EnvVars("FINCH_ADMIN_TOKEN")},
 			&cli.BoolFlag{Name: "enable-sse", Value: true, Sources: cli.EnvVars("FINCH_ENABLE_SSE")},
-			&cli.StringFlag{Name: "sse-addr", Sources: cli.EnvVars("FINCH_SSE_ADDR")},
+			&cli.StringFlag{Name: "sse-addr", DefaultText: "127.0.0.1:9036", Sources: cli.EnvVars("FINCH_SSE_ADDR")},
 		},
 		Action: func(ctx context.Context, c *cli.Command) error {
 			listenSet := c.IsSet("listen")

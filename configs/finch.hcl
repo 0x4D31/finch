@@ -14,7 +14,7 @@ admin {
 
 sse {
   enabled = true
-  addr    = ":9036"
+  addr    = "127.0.0.1:9036"
 }
 
 # example suricata configuration
