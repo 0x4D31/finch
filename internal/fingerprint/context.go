@@ -53,11 +53,11 @@ func New(r *http.Request) (RequestCtx, error) {
 	if err != nil {
 		return RequestCtx{}, err
 	}
-	hb := &tlsx.ClientHelloBasic{}
-	if err := hb.Unmarshal(md.ClientHelloRecord); err != nil {
+	ch := &tlsx.ClientHelloBasic{}
+	if err := ch.Unmarshal(md.ClientHelloRecord); err != nil {
 		return RequestCtx{}, err
 	}
-	ja3Raw := string(fpja3.Bare(hb))
+	ja3Raw := string(fpja3.Bare(ch))
 
 	ja4, err := fp.JA4Fingerprint(md)
 	if err != nil {
