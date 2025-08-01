@@ -33,6 +33,7 @@ type Event struct {
 	ProtocolVersion string            `json:"protocolVersion"`
 	UserAgent       string            `json:"userAgent"`
 	JA3             string            `json:"ja3"`
+	JA3Raw          string            `json:"ja3Raw"`
 	JA4             string            `json:"ja4"`
 	JA4H            string            `json:"ja4h"`
 	HTTP2           string            `json:"http2"`

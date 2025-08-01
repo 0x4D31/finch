@@ -6,13 +6,16 @@ import (
 	"net/http"
 
 	fp "github.com/0x4D31/fingerproxy/pkg/fingerprint"
+	fpja3 "github.com/0x4D31/fingerproxy/pkg/ja3"
 	fpja4h "github.com/0x4D31/fingerproxy/pkg/ja4h"
 	"github.com/0x4D31/fingerproxy/pkg/metadata"
+	"github.com/dreadl0ck/tlsx"
 )
 
 // RequestCtx contains request metadata needed for rule evaluation.
 type RequestCtx struct {
 	JA3          string
+	JA3Raw       string
 	JA4          string
 	JA4H         string
 	HTTP2        string
@@ -50,6 +53,12 @@ func New(r *http.Request) (RequestCtx, error) {
 	if err != nil {
 		return RequestCtx{}, err
 	}
+	hb := &tlsx.ClientHelloBasic{}
+	if err := hb.Unmarshal(md.ClientHelloRecord); err != nil {
+		return RequestCtx{}, err
+	}
+	ja3Raw := string(fpja3.Bare(hb))
+
 	ja4, err := fp.JA4Fingerprint(md)
 	if err != nil {
 		return RequestCtx{}, err
@@ -62,6 +71,7 @@ func New(r *http.Request) (RequestCtx, error) {
 	}
 
 	ctx.JA3 = ja3
+	ctx.JA3Raw = ja3Raw
 	ctx.JA4 = ja4
 	ctx.JA4H = ja4h
 	ctx.HTTP2 = http2fp

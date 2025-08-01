@@ -52,6 +52,7 @@ type detailResponse struct {
 type summaryResponse struct {
 	UserAgent string `json:"userAgent"`
 	JA3       string `json:"ja3"`
+	JA3Raw    string `json:"ja3Raw"`
 	JA4       string `json:"ja4"`
 	JA4H      string `json:"ja4h"`
 	HTTP2     string `json:"http2"`
@@ -156,6 +157,7 @@ func echoHandler(w http.ResponseWriter, r *http.Request) {
 		resp := summaryResponse{
 			UserAgent: r.UserAgent(),
 			JA3:       ctx.JA3,
+			JA3Raw:    ctx.JA3Raw,
 			JA4:       ctx.JA4,
 			JA4H:      ctx.JA4H,
 			HTTP2:     ctx.HTTP2,
@@ -169,6 +171,7 @@ func echoHandler(w http.ResponseWriter, r *http.Request) {
 		resp := summaryResponse{
 			UserAgent: r.UserAgent(),
 			JA3:       ctx.JA3,
+			JA3Raw:    ctx.JA3Raw,
 			JA4:       ctx.JA4,
 			JA4H:      ctx.JA4H,
 			HTTP2:     ctx.HTTP2,
