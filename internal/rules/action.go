@@ -8,4 +8,5 @@ const (
 	ActionDeny    Action = "deny"
 	ActionRoute   Action = "route"
 	ActionDeceive Action = "deceive"
+	ActionTarpit  Action = "tarpit"
 )

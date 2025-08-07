@@ -22,8 +22,7 @@ rule "route-safari" {
 
 # 3. Tarpit curl‑like requests hitting /yo
 rule "tarpit-curl-sus" {
-  action         = "deceive"
-  deception_mode = "tarpit"
+  action = "tarpit"
 
   when all {
     tls_ja3   = ["4f2655722e37c542ebeaf1eed48cbbbb"]
@@ -33,8 +32,7 @@ rule "tarpit-curl-sus" {
 
 # 4. Deceive any request that triggers a Suricata HTTP rule
 rule "deceive-suri-match" {
-  action         = "deceive"
-  deception_mode = "galah"
+  action = "deceive"
 
   when {
     suricata_msg = ["~ .+"]   # match if the message is non‑empty

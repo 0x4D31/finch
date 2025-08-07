@@ -537,7 +537,7 @@ func TestServer_TarpitConcurrency(t *testing.T) {
 		tarpitLimit = oldLimit
 	}()
 
-	rule := rules.Rule{ID: "tp", Action: rules.ActionDeceive, DeceptionMode: "tarpit",
+	rule := rules.Rule{ID: "tp", Action: rules.ActionTarpit,
 		Expr: rules.Cond{Matcher: func(*fingerprint.RequestCtx) bool { return true }},
 	}
 	eng := &rules.Engine{Rules: []*rules.Rule{&rule}, DefaultAction: rules.ActionAllow}

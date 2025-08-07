@@ -13,7 +13,7 @@ import (
 // tarpit responses. Tests may override this value.
 var tarpitLimit = make(chan struct{}, 16)
 
-// tarpitResponder is the shared handler used for the "tarpit" deception mode.
+// tarpitResponder is the shared handler used for the tarpit action.
 var tarpitResponder = newTarpitHandler(TarpitConfig{Concurrency: tarpitLimit})
 
 // TarpitConfig configures the tarpit handler.

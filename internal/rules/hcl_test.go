@@ -513,22 +513,13 @@ func TestLoadHCLDeceiveModes(t *testing.T) {
 			want: "galah",
 		},
 		{
-			name: "agent-mode",
+			name: "explicit-galah",
 			hcl: `rule "d" {
   action = "deceive"
-  deception_mode = "agent"
+  deception_mode = "galah"
   when {}
 }`,
-			want: "agent",
-		},
-		{
-			name: "tarpit-mode",
-			hcl: `rule "d" {
-  action = "deceive"
-  deception_mode = "tarpit"
-  when {}
-}`,
-			want: "tarpit",
+			want: "galah",
 		},
 	}
 
@@ -560,6 +551,38 @@ func TestLoadHCLDeceiveModes(t *testing.T) {
 				t.Fatalf("mode want %s got %s", tt.want, r.DeceptionMode)
 			}
 		})
+	}
+}
+
+func TestLoadHCLTarpitAction(t *testing.T) {
+	hcl := `rule "t" {
+  action = "tarpit"
+  when {}
+}`
+	tmp, err := os.CreateTemp(t.TempDir(), "rule-*.hcl")
+	if err != nil {
+		t.Fatalf("temp: %v", err)
+	}
+	if _, err := tmp.WriteString(hcl); err != nil {
+		t.Fatalf("write: %v", err)
+	}
+	if err := tmp.Close(); err != nil {
+		t.Fatalf("close: %v", err)
+	}
+
+	rs, err := LoadHCL(tmp.Name())
+	if err != nil {
+		t.Fatalf("load: %v", err)
+	}
+	if len(rs.Rules) != 1 {
+		t.Fatalf("expected 1 rule")
+	}
+	r := rs.Rules[0]
+	if r.Action != ActionTarpit {
+		t.Fatalf("want action tarpit got %s", r.Action)
+	}
+	if r.DeceptionMode != "" {
+		t.Fatalf("expected empty deception_mode got %s", r.DeceptionMode)
 	}
 }
 

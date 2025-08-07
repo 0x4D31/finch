@@ -294,7 +294,7 @@ func compileRule(rb ruleBlock) (*Rule, error) {
 		return nil, fmt.Errorf("rule %s: missing action", rb.Name)
 	}
 	switch rb.Action {
-	case string(ActionAllow), string(ActionDeny), string(ActionRoute), string(ActionDeceive):
+	case string(ActionAllow), string(ActionDeny), string(ActionRoute), string(ActionDeceive), string(ActionTarpit):
 		r.Action = Action(rb.Action)
 	default:
 		return nil, fmt.Errorf("rule %s: invalid action", rb.Name)
@@ -321,7 +321,7 @@ func compileRule(rb ruleBlock) (*Rule, error) {
 		if mode == "" {
 			mode = "galah"
 		}
-		if mode != "galah" && mode != "agent" && mode != "tarpit" {
+		if mode != "galah" {
 			return nil, fmt.Errorf("rule %s: invalid deception_mode", rb.Name)
 		}
 		r.DeceptionMode = mode

@@ -68,6 +68,8 @@ func emojiForAction(action rules.Action) string {
 		return "↪️"
 	case rules.ActionDeceive:
 		return "🎭"
+	case rules.ActionTarpit:
+		return "🐌"
 	default:
 		return "❓"
 	}
@@ -464,8 +466,10 @@ func (h *ruleHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	var deceiveErr error
 	deceptionMode := ""
 	respSource := ""
-	if action == rules.ActionDeceive && matchedRule != nil {
-		deceptionMode = matchedRule.DeceptionMode
+	if action == rules.ActionDeceive {
+		if matchedRule != nil {
+			deceptionMode = matchedRule.DeceptionMode
+		}
 		if deceptionMode == "" {
 			deceptionMode = "galah"
 		}
@@ -647,7 +651,7 @@ func (h *ruleHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusForbidden)
 		return
 	}
-	if action == rules.ActionDeceive && matchedRule != nil && matchedRule.DeceptionMode == "tarpit" {
+	if action == rules.ActionTarpit {
 		tarpitResponder.ServeHTTP(w, r)
 		return
 	}
