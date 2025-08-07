@@ -5,7 +5,7 @@
 Finch is a lightweight reverse proxy written in Go. It inspects TLS handshakes and HTTP requests to extract JA3, JA4, JA4H, and Akamai HTTP/2 fingerprints, then evaluates them—alongside the rest of the request metadata—against flexible, hot‑reloadable rules written in HCL. On a per‑request basis, Finch can:
 
 - **allow** legitimate traffic
-- **deny** scanners
+- **deny** unwanted traffic
 - **route** clients to alternate upstreams
 - **deceive** attackers with on‑the‑fly, LLM‑generated responses via [Galah](https://github.com/0x4D31/galah)
 - **tarpit** scanners with slow drip responses
