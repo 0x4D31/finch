@@ -15,8 +15,8 @@ cloud.google.com/go/longrunning v0.5.6 h1:xAe8+0YaWoCKr9t1+aWe+OeQgN/iJK1fEgZSXm
 cloud.google.com/go/longrunning v0.5.6/go.mod h1:vUaDrWYOMKRuhiv6JBnn49YxCPz2Ayn9GqyjaBT8/mA=
 cloud.google.com/go/vertexai v0.7.1 h1:CSdqsEwjklLIlI1e5SrsnkwG/I+CeJekkBbMTzeYhVg=
 cloud.google.com/go/vertexai v0.7.1/go.mod h1:HfnfYR9aPS+qF2436S6Hzuw0Fp+PORjzK3ggqymdzSU=
-github.com/0x4D31/fingerproxy v1.2.5-finch h1:MJvvst7OJyInIIyEDo1Up9Zsd2MFOPar3AfuO9dsV38=
-github.com/0x4D31/fingerproxy v1.2.5-finch/go.mod h1:uPS5fjJPVoDTtnEtrZrNr+NKw8zV9FyT3WkTS6jECxY=
+github.com/0x4D31/fingerproxy v1.2.6-finch h1:sugsvQXVSMoq4SLWyeUL6zzPuZk+A3N6mykPM/CgjRs=
+github.com/0x4D31/fingerproxy v1.2.6-finch/go.mod h1:uPS5fjJPVoDTtnEtrZrNr+NKw8zV9FyT3WkTS6jECxY=
 github.com/0x4d31/galah v1.1.1 h1:aKKNvb+Z4q2PRoEhZJMUoVEGTPW2Qkl4YNsOWFIvbHI=
 github.com/0x4d31/galah v1.1.1/go.mod h1:hZpBL99sFLDz0+PByQnEeZ8MmrLwjVDl/1hceDOY3Vk=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=

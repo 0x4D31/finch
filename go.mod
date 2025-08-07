@@ -5,7 +5,7 @@ go 1.24
 toolchain go1.24.5
 
 require (
-	github.com/0x4D31/fingerproxy v1.2.5-finch
+	github.com/0x4D31/fingerproxy v1.2.6-finch
 	github.com/alexflint/go-arg v1.6.0
 	github.com/charmbracelet/lipgloss v1.1.0
 	github.com/charmbracelet/log v0.4.2
