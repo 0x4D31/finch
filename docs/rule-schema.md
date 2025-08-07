@@ -1,6 +1,6 @@
 # Rule Specification
 
-Finch rules are written in HCL. Each rule defines an `action` (`allow`, `deny`, `route` or `deceive`) and optional metadata such as an `upstream` URL, `strip_prefix`, `expires` timestamp or `deception_mode`. Conditions are grouped under a single `when` block; additional nested `when` blocks may be added for complex logic. If no label is specified the default aggregator is `all` (logical AND). A rule with multiple top‑level `when` blocks is invalid.
+Finch rules are written in HCL. Each rule defines an `action` (`allow`, `deny`, `route`, `deceive` or `tarpit`) and optional metadata such as an `upstream` URL, `strip_prefix`, `expires` timestamp or `deception_mode`. Conditions are grouped under a single `when` block; additional nested `when` blocks may be added for complex logic. If no label is specified the default aggregator is `all` (logical AND). A rule with multiple top‑level `when` blocks is invalid.
 
 ## Condition fields
 
@@ -84,19 +84,13 @@ rule "static" {
 
 ## Deception Mode
 
-The `deceive` action instructs Finch to generate a fake HTTP response instead of forwarding the request. The response is produced by an external deception service and controlled via the optional `deception_mode` attribute. Supported modes:
-
-1. `galah` – Use [Galah](https://github.com/0x4D31/galah) to generate LLM-based responses. This is the default mode when `deception_mode` is omitted. A `galah` block must be present in the configuration; otherwise Finch exits with an error.
-2. `tarpit` – Send a trickle of random bytes for 45–120 seconds (configurable) to frustrate scanners. Concurrent responses are limited (16 by default).
-3. `agent` *(upcoming)* – Serve static responses crafted ahead of time by a local AI agent. For unknown paths the agent returns a stub response and later learns a realistic one.
-
+The `deceive` action instructs Finch to generate a fake HTTP response instead of forwarding the request. The response is produced by an external deception service and controlled via the optional `deception_mode` attribute. Currently the only supported mode is `galah`, which is used by default when `deception_mode` is omitted. A `galah` block must be present in the configuration; otherwise Finch exits with an error.
 
 Example using Galah:
 
 ```hcl
 rule "honeypot" {
-  action         = "deceive"
-  deception_mode = "galah"
+  action = "deceive"
 
   when {
     http_path = ["/admin"]
@@ -105,3 +99,7 @@ rule "honeypot" {
 ```
 
 Refer to the Galah documentation for configuration options.
+
+## Tarpit Action
+
+The `tarpit` action sends a trickle of random bytes for 45–120 seconds (configurable) to frustrate scanners. Concurrent responses are limited (16 by default).

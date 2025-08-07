@@ -4,10 +4,11 @@
 
 Finch is a lightweight reverse proxy written in Go. It inspects TLS handshakes and HTTP requests to extract JA3, JA4, JA4H, and Akamai HTTP/2 fingerprints, then evaluates them—alongside the rest of the request metadata—against flexible, hot‑reloadable rules written in HCL. On a per‑request basis, Finch can:
 
-- **allow** legitimate traffic  
-- **deny** or **tarpit** scanners  
-- **route** clients to alternate upstreams  
+- **allow** legitimate traffic
+- **deny** scanners
+- **route** clients to alternate upstreams
 - **deceive** attackers with on‑the‑fly, LLM‑generated responses via [Galah](https://github.com/0x4D31/galah)
+- **tarpit** scanners with slow drip responses
 
 Finch also offers an authenticated admin API for live configuration and rule updates, a real‑time SSE feed for observability, Suricata HTTP rule matching, and an echo mode for testing or dataset collection. Experimental HTTP/3 and QUIC fingerprinting support is included. Use Finch to block scrapers and other unwanted traffic, slow down scanners, or deploy dynamic honeypots.
 
@@ -18,9 +19,10 @@ Finch also offers an authenticated admin API for live configuration and rule upd
 ### Key Features
 
 - **Fingerprint extraction** – Capture [JA3](https://engineering.salesforce.com/tls-fingerprinting-with-ja3-and-ja3s-247362855967/), [JA4](https://github.com/FoxIO-LLC/ja4/blob/main/technical_details/JA4.md), [JA4H](https://github.com/FoxIO-LLC/ja4/blob/main/technical_details/JA4H.md), and [Akamai HTTP/2](https://www.blackhat.com/docs/eu-17/materials/eu-17-Shuster-Passive-Fingerprinting-Of-HTTP2-Clients-wp.pdf) fingerprints for every request, providing high‑fidelity identification of client libraries and TLS stacks.
-- **Flexible rule engine** – Define policies using [HCL](https://github.com/hashicorp/hcl) that evaluate fingerprints, HTTP methods and paths, header values, source‑IP ranges, and Suricata alert messages. Rules can nest `when all` / `when any` blocks and decide whether to `allow`, `deny`, `route`, or `deceive` each request. See the [Rule Schema](docs/rule-schema.md) for details.
+- **Flexible rule engine** – Define policies using [HCL](https://github.com/hashicorp/hcl) that evaluate fingerprints, HTTP methods and paths, header values, source‑IP ranges, and Suricata alert messages. Rules can nest `when all` / `when any` blocks and decide whether to `allow`, `deny`, `route`, `tarpit`, or `deceive` each request. See the [Rule Schema](docs/rule-schema.md) for details.
 - **Suricata HTTP rules** – Finch loads Suricata `.rules`, evaluates requests against them, hot‑reloads rules on changes, logs matches, and exposes each matched rule’s `msg` to your HCL policies—no Suricata installation needed.
-- **Deception mode** – Trigger the `deceive` action to serve LLM‑generated honeypot responses via [Galah](https://github.com/0x4D31/galah) or slow scanners with a configurable tarpit.  
+- **Deception** – Trigger the `deceive` action to serve LLM‑generated honeypot responses via [Galah](https://github.com/0x4D31/galah).
+- **Tarpit** – Frustrate scanners with configurable slow responses.
 - **Live event feed** – Stream structured JSON events over Server‑Sent Events (SSE) for immediate visibility.  
 - **Echo mode** – Run a standalone server that echoes fingerprint data—ideal for testing and dataset collection.
 - **Multiple listeners & hot reloads** – Define multiple listeners, each with its own upstream, TLS certificate, rule file, and log. Finch hot‑reloads configuration and rule files automatically whenever they change or when it receives `SIGHUP`.  
@@ -138,7 +140,7 @@ See [Configuration](docs/configuration.md) for a detailed description of every f
 
 ## Rule Engine
 
-Rules are written in HCL and define an `action` (`allow`, `deny`, `route` or `deceive`), optional metadata (e.g. `upstream`, `strip_prefix`, `expires`, `deception_mode`) and a `when` block containing conditions. The top‑level `when` block can be labelled `when all` (AND) or `when any` (OR); omitting the label implies `all`.
+Rules are written in HCL and define an `action` (`allow`, `deny`, `route`, `deceive` or `tarpit`), optional metadata (e.g. `upstream`, `strip_prefix`, `expires`, `deception_mode`) and a `when` block containing conditions. The top‑level `when` block can be labelled `when all` (AND) or `when any` (OR); omitting the label implies `all`.
 
 Condition fields include TLS and HTTP fingerprints, HTTP methods and paths, header maps, client IP ranges and Suricata messages. Prefix (`^`), exact (`=`) and regex (`~`) matching operators are supported. See [Rule Schema](docs/rule-schema.md) for full details and examples.
 
@@ -153,10 +155,9 @@ rule "block-scanner-ja3" {
   }
 }
 
-# Deceive anything that matches an evasive JA4 profile
-rule "deception-rule" {
-  action         = "deceive"
-  deception_mode = "tarpit"        # or "galah" for AI‑generated responses
+# Slow anything that matches an evasive JA4 profile
+rule "tarpit-rule" {
+  action = "tarpit"
 
   when any {                       # match if any field is true
     tls_ja4   = ["q13d0312h3_55b375c5d22e_c183556c78e2"]
