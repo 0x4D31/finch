@@ -40,6 +40,18 @@ Each `listener` block defines a single proxy listener:
 | `upstream_ca_file`          | Listener‑specific CA bundle for upstream HTTPS.                   |
 | `upstream_skip_tls_verify`  | Skip verification of upstream certificates for this listener.     |
 
+### Upstream Base Path Mapping
+
+If a listener `upstream` includes a non-empty path (for example, `https://api.example.com/v1`) or a query string, Finch maps incoming paths and merges queries as follows when no route rule overrides the upstream:
+
+- `/` → `/v1` (no trailing slash added)
+- `/<p>` → `/v1/<p>`
+- Upstream query params merge with client query params (order-insensitive).
+
+This path joining and query merging matches the route rule path semantics and preserves proper URL escaping.
+
+If the upstream path is exactly `/`, it is treated as having no base path (no changes to incoming request paths).
+
 ## Suricata and Galah Blocks
 
 If `suricata.enabled = true` and a `rules_dir` is provided, Finch watches the directory for `.rules` files and reloads them automatically. Only supported Suricata keywords will be applied.
