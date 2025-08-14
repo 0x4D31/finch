@@ -49,6 +49,31 @@ func TestMergeOverrides(t *testing.T) {
 		t.Fatalf("admin/sse not enabled")
 	}
 }
+
+func TestMergeListenerSkipVerifyOverride(t *testing.T) {
+	tmp := t.TempDir()
+	rf := tmp + "/r.rules"
+	if err := os.WriteFile(rf, nil, 0o644); err != nil {
+		t.Fatalf("write rules: %v", err)
+	}
+	tru := true
+	fal := false
+	cfg := config.Config{
+		Defaults: &config.Defaults{RuleFile: rf, UpstreamSkipTLSVerify: &tru},
+		Listeners: []config.ListenerConfig{{
+			ID:                    "a",
+			Bind:                  "0.0.0.0:1",
+			Upstream:              "http://up",
+			UpstreamSkipTLSVerify: &fal,
+		}},
+	}
+	if err := Merge(&cfg, Overrides{}); err != nil {
+		t.Fatalf("merge: %v", err)
+	}
+	if cfg.Listeners[0].UpstreamSkipTLSVerify == nil || *cfg.Listeners[0].UpstreamSkipTLSVerify {
+		t.Fatalf("listener override lost: %v", cfg.Listeners[0].UpstreamSkipTLSVerify)
+	}
+}
 func TestSynthesiseFromFlags(t *testing.T) {
 	tmp := t.TempDir()
 	rule := filepath.Join(tmp, "rules.hcl")

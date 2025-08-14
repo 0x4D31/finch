@@ -196,7 +196,17 @@ func (rt *runtimeState) addListener(l config.ListenerConfig, cfg *config.Config,
 		certFile = l.TLS.Cert
 		keyFile = l.TLS.Key
 	}
-	svr, err := proxy.New(l.ID, l.Bind, l.Upstream, certFile, keyFile, lgr, localEng, globalEng, suriSet, hub, rt.galahSvc, l.UpstreamCAFile, l.UpstreamSkipTLSVerify)
+	caFile := l.UpstreamCAFile
+	skip := false
+	if l.UpstreamSkipTLSVerify != nil {
+		skip = *l.UpstreamSkipTLSVerify
+	} else if cfg.Defaults != nil && cfg.Defaults.UpstreamSkipTLSVerify != nil {
+		skip = *cfg.Defaults.UpstreamSkipTLSVerify
+	}
+	if caFile == "" && cfg.Defaults != nil {
+		caFile = cfg.Defaults.UpstreamCAFile
+	}
+	svr, err := proxy.New(l.ID, l.Bind, l.Upstream, certFile, keyFile, lgr, localEng, globalEng, suriSet, hub, rt.galahSvc, caFile, skip)
 	if err != nil {
 		return nil, fmt.Errorf("server %s: %w", l.ID, err)
 	}

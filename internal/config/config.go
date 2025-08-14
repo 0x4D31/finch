@@ -54,7 +54,7 @@ type Defaults struct {
 	DefaultAction         string `hcl:"default_action,optional" json:"default_action,omitempty"`
 	ProxyCacheSize        int    `hcl:"proxy_cache_size,optional" json:"proxy_cache_size,omitempty"`
 	UpstreamCAFile        string `hcl:"upstream_ca_file,optional" json:"upstream_ca_file,omitempty"`
-	UpstreamSkipTLSVerify bool   `hcl:"upstream_skip_tls_verify,optional" json:"upstream_skip_tls_verify,omitempty"`
+	UpstreamSkipTLSVerify *bool  `hcl:"upstream_skip_tls_verify,optional" json:"upstream_skip_tls_verify,omitempty"`
 }
 
 // ListenerConfig defines a single listener instance.
@@ -66,7 +66,7 @@ type ListenerConfig struct {
 	AccessLog             string     `hcl:"access_log,optional" json:"access_log,omitempty"`
 	TLS                   *TLSConfig `hcl:"tls,block" json:"tls,omitempty"`
 	UpstreamCAFile        string     `hcl:"upstream_ca_file,optional" json:"upstream_ca_file,omitempty"`
-	UpstreamSkipTLSVerify bool       `hcl:"upstream_skip_tls_verify,optional" json:"upstream_skip_tls_verify,omitempty"`
+	UpstreamSkipTLSVerify *bool      `hcl:"upstream_skip_tls_verify,optional" json:"upstream_skip_tls_verify,omitempty"`
 }
 
 // TLSConfig holds optional TLS certificate paths.
