@@ -169,8 +169,12 @@ func watchConfig(ctx context.Context, path string, rt *runtimeState, svc **galah
 				if caFile == "" && cfg.Defaults != nil {
 					caFile = cfg.Defaults.UpstreamCAFile
 				}
-				if !skipVerify && cfg.Defaults != nil {
+				if skipVerify == nil && cfg.Defaults != nil {
 					skipVerify = cfg.Defaults.UpstreamSkipTLSVerify
+				}
+				skip := false
+				if skipVerify != nil {
+					skip = *skipVerify
 				}
 				if l.Bind != srv.ListenAddr ||
 					l.Upstream != srv.UpstreamURL.String() ||
@@ -178,7 +182,7 @@ func watchConfig(ctx context.Context, path string, rt *runtimeState, svc **galah
 					certFile != srv.CertFile ||
 					keyFile != srv.KeyFile ||
 					caFile != srv.UpstreamCAFile ||
-					skipVerify != srv.UpstreamSkipVerify {
+					skip != srv.UpstreamSkipVerify {
 					ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 					_ = srv.Shutdown(ctx)
 					cancel()

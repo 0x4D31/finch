@@ -120,7 +120,8 @@ func Merge(cfg *config.Config, ov Overrides) error {
 		cfg.Defaults.UpstreamCAFile = p
 	}
 	if ov.UpstreamSkipSet {
-		cfg.Defaults.UpstreamSkipTLSVerify = ov.UpstreamSkipTLSVerify
+		skip := ov.UpstreamSkipTLSVerify
+		cfg.Defaults.UpstreamSkipTLSVerify = &skip
 	}
 
 	if cfg.Admin == nil {
@@ -164,7 +165,7 @@ func Merge(cfg *config.Config, ov Overrides) error {
 		if l.UpstreamCAFile == "" {
 			l.UpstreamCAFile = cfg.Defaults.UpstreamCAFile
 		}
-		if !l.UpstreamSkipTLSVerify {
+		if l.UpstreamSkipTLSVerify == nil {
 			l.UpstreamSkipTLSVerify = cfg.Defaults.UpstreamSkipTLSVerify
 		}
 		if l.Upstream == "" {
@@ -220,6 +221,7 @@ func SynthesiseFromFlags(cmd *cli.Command) (config.Config, error) {
 		return config.Config{}, fmt.Errorf("cert and key must both be set")
 	}
 	skip := cmd.Bool("upstream-skip-tls-verify")
+	skipPtr := skip
 
 	adminEnabled := cmd.Bool("enable-admin")
 	adminAddr := cmd.String("admin-addr")
@@ -238,7 +240,7 @@ func SynthesiseFromFlags(cmd *cli.Command) (config.Config, error) {
 			RuleFile:              rf,
 			AccessLog:             al,
 			UpstreamCAFile:        caFile,
-			UpstreamSkipTLSVerify: skip,
+			UpstreamSkipTLSVerify: &skipPtr,
 			ProxyCacheSize:        DefaultProxyCacheSize,
 		},
 		Admin: &config.AdminConfig{
@@ -253,6 +255,7 @@ func SynthesiseFromFlags(cmd *cli.Command) (config.Config, error) {
 	}
 	cfg.Listeners = make([]config.ListenerConfig, len(listens))
 	for i, addr := range listens {
+		skipListener := skip
 		l := config.ListenerConfig{
 			ID:                    fmt.Sprintf("listener%d", i+1),
 			Bind:                  addr,
@@ -260,7 +263,7 @@ func SynthesiseFromFlags(cmd *cli.Command) (config.Config, error) {
 			RuleFile:              rf,
 			AccessLog:             al,
 			UpstreamCAFile:        caFile,
-			UpstreamSkipTLSVerify: skip,
+			UpstreamSkipTLSVerify: &skipListener,
 		}
 		if cert != "" {
 			l.TLS = &config.TLSConfig{Cert: cert, Key: key}
