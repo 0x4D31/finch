@@ -461,6 +461,26 @@ func (h *ruleHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// Map request path/query onto default upstream base path (no rule override).
+	// This aligns default upstream semantics with rule-based routing, including
+	// canonical joining and query merging handled by mapPath.
+	if matchedRule == nil && target != nil && ((target.Path != "" && target.Path != "/") || target.RawQuery != "") {
+		dest := target.RequestURI()
+		newPath, newRawPath, q := mapPath(
+			r.URL.Path,
+			r.URL.EscapedPath(),
+			r.URL.RawQuery,
+			dest,
+			nil, // no matched rule
+			"",
+		)
+		r.URL.Path = newPath
+		r.URL.RawPath = newRawPath
+		r.URL.RawQuery = q
+		// keep only scheme/host on the target; path/query already applied to r.URL
+		target = &url.URL{Scheme: target.Scheme, Host: target.Host}
+	}
+
 	// Prepare deception response early so it can be logged and reused.
 	var deceiveResp galahllm.JSONResponse
 	var deceiveErr error
