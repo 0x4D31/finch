@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"net/url"
+	"strings"
 	"time"
 
 	cblog "github.com/charmbracelet/log"
@@ -40,7 +42,11 @@ func (s *Server) events(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/event-stream")
 	w.Header().Set("Cache-Control", "no-cache")
 	w.Header().Set("Connection", "keep-alive")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
+
+	if !allowOrigin(w, r) {
+		http.Error(w, "forbidden", http.StatusForbidden)
+		return
+	}
 
 	if err := Flush(fl); err != nil {
 		cblog.Errorf("flush headers: %v", err)
@@ -75,4 +81,33 @@ func (s *Server) events(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
+}
+
+func allowOrigin(w http.ResponseWriter, r *http.Request) bool {
+	origin := r.Header.Get("Origin")
+	if origin == "" {
+		return true
+	}
+
+	w.Header().Add("Vary", "Origin")
+
+	u, err := url.Parse(origin)
+	if err != nil {
+		return false
+	}
+
+	if u.Scheme != "http" && u.Scheme != "https" {
+		return false
+	}
+
+	if u.Host == "" {
+		return false
+	}
+
+	if strings.EqualFold(u.Host, r.Host) {
+		w.Header().Set("Access-Control-Allow-Origin", origin)
+		return true
+	}
+
+	return false
 }

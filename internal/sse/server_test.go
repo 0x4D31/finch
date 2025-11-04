@@ -95,6 +95,29 @@ func (f *flushRecorder) WriteHeader(statusCode int)  {}
 func (f *flushRecorder) Flush()                      { f.count++ }
 func (f *flushRecorder) FlushErr() error             { return nil }
 
+type corsRecorder struct {
+	header http.Header
+	status int
+	body   bytes.Buffer
+}
+
+func newCorsRecorder() *corsRecorder {
+	return &corsRecorder{header: make(http.Header)}
+}
+
+func (c *corsRecorder) Header() http.Header { return c.header }
+
+func (c *corsRecorder) Write(p []byte) (int, error) {
+	if c.status == 0 {
+		c.status = http.StatusOK
+	}
+	return c.body.Write(p)
+}
+
+func (c *corsRecorder) WriteHeader(statusCode int) { c.status = statusCode }
+
+func (c *corsRecorder) Flush() {}
+
 func TestEventsFlushHeaders(t *testing.T) {
 	hub := NewHub()
 	srv := NewServer(":0", hub)
@@ -195,5 +218,68 @@ func TestServerStartAndShutdown(t *testing.T) {
 	case <-done:
 	case <-time.After(100 * time.Millisecond):
 		t.Fatal("server did not shut down")
+	}
+}
+
+func TestEventsRejectsCrossOrigin(t *testing.T) {
+	hub := NewHub()
+	srv := NewServer(":0", hub)
+
+	req := httptest.NewRequest("GET", "http://127.0.0.1/events", nil)
+	req.Header.Set("Origin", "https://evil.example")
+
+	rr := newCorsRecorder()
+	srv.events(rr, req)
+
+	if rr.status != http.StatusForbidden {
+		t.Fatalf("expected status %d, got %d", http.StatusForbidden, rr.status)
+	}
+	if acao := rr.Header().Get("Access-Control-Allow-Origin"); acao != "" {
+		t.Fatalf("unexpected allow origin header %q", acao)
+	}
+}
+
+func TestEventsAllowsMatchingOrigin(t *testing.T) {
+	hub := NewHub()
+	srv := NewServer(":0", hub)
+
+	req := httptest.NewRequest("GET", "http://localhost:9036/events", nil)
+	req.Header.Set("Origin", "http://localhost:9036")
+	ctx, cancel := context.WithCancel(req.Context())
+	req = req.WithContext(ctx)
+
+	rr := newCorsRecorder()
+	done := make(chan struct{})
+	go func() {
+		srv.events(rr, req)
+		close(done)
+	}()
+
+	time.Sleep(10 * time.Millisecond)
+
+	if acao := rr.Header().Get("Access-Control-Allow-Origin"); acao != "http://localhost:9036" {
+		t.Fatalf("expected allow origin header, got %q", acao)
+	}
+	if vary := rr.Header().Values("Vary"); len(vary) == 0 {
+		t.Fatal("expected vary header")
+	} else {
+		found := false
+		for _, v := range vary {
+			if strings.Contains(v, "Origin") {
+				found = true
+				break
+			}
+		}
+		if !found {
+			t.Fatalf("vary header missing Origin: %v", vary)
+		}
+	}
+
+	cancel()
+
+	select {
+	case <-done:
+	case <-time.After(100 * time.Millisecond):
+		t.Fatal("handler did not exit")
 	}
 }
