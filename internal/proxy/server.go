@@ -5,7 +5,6 @@ import (
 	"context"
 	"crypto/rand"
 	"crypto/rsa"
-	"crypto/sha256"
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/json"
@@ -20,8 +19,6 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
-	"strconv"
-	"strings"
 	"sync/atomic"
 	"time"
 
@@ -531,25 +528,6 @@ func (h *ruleHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if h.logger != nil {
-		srcHost, srcPortStr, _ := net.SplitHostPort(r.RemoteAddr)
-		srcPort := 0
-		if p, err := strconv.Atoi(srcPortStr); err == nil {
-			srcPort = p
-		}
-		dstHost, dstPort := "", 0
-		if addr, ok := r.Context().Value(http.LocalAddrContextKey).(net.Addr); ok {
-			h, pstr, _ := net.SplitHostPort(addr.String())
-			dstHost = h
-			if p, err := strconv.Atoi(pstr); err == nil {
-				dstPort = p
-			}
-		}
-		hdr := r.Header.Clone()
-		hdr.Del(HeaderJA3)
-		hdr.Del(HeaderJA4)
-		hdr.Del(HeaderJA4H)
-		hdr.Del(HeaderHTTP2)
-
 		if matchedRule != nil || h.global != nil {
 			host, _, _ := net.SplitHostPort(r.RemoteAddr)
 			emoji := emojiForAction(action)
@@ -567,14 +545,6 @@ func (h *ruleHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			)
 		}
 
-		headers := make(map[string]string, len(hdr))
-		for k, v := range hdr {
-			headers[k] = strings.Join(v, ",")
-		}
-
-		sha := sha256.Sum256(bodyBytes)
-
-		now := time.Now().UTC()
 		id := ruleID
 		if id == "" && (h.local != nil || h.global != nil) {
 			id = "default"
@@ -602,33 +572,16 @@ func (h *ruleHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		ev := logger.Event{
-			EventTime:       now,
-			SrcIP:           srcHost,
-			SrcPort:         srcPort,
-			DstIP:           dstHost,
-			DstPort:         dstPort,
-			Method:          r.Method,
-			Request:         origReqURL,
-			Headers:         headers,
-			Body:            string(bodyBytes),
-			BodySha256:      fmt.Sprintf("%x", sha[:]),
-			ProtocolVersion: r.Proto,
-			UserAgent:       r.UserAgent(),
-			JA3:             reqCtx.JA3,
-			JA3Raw:          reqCtx.JA3Raw,
-			JA4:             reqCtx.JA4,
-			JA4H:            reqCtx.JA4H,
-			HTTP2:           reqCtx.HTTP2,
-			RuleID:          id,
-			Action:          action,
-			Upstream:        upstreamStr,
-			SuricataMatches: surMatches,
-			ListenerAddr:    h.listenerAddr,
-			Error:           errMsg,
-			DeceptionMode:   deceptionMode,
-			GalahInfo:       galahInfo,
-		}
+		ev := logger.NewRequestEvent(r, reqCtx, bodyBytes)
+		ev.Request = origReqURL
+		ev.RuleID = id
+		ev.Action = action
+		ev.Upstream = upstreamStr
+		ev.SuricataMatches = surMatches
+		ev.ListenerAddr = h.listenerAddr
+		ev.Error = errMsg
+		ev.DeceptionMode = deceptionMode
+		ev.GalahInfo = galahInfo
 		_ = h.logger.Log(ev)
 		if h.hub != nil {
 			fe := logger.Event{

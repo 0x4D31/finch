@@ -29,6 +29,8 @@ Finch also offers an authenticated admin API for live configuration and rule upd
 - **HTTP/3 & QUIC support** (experimental) – Parse QUIC Initial packets to generate JA4 fingerprints and apply the rule engine to HTTP/3 traffic.  
 
 
+For custom handlers and standalone collectors, see [Reusing Finch fingerprints and access logs](docs/library.md).
+
 ## Installation
 
 ### Building from source
